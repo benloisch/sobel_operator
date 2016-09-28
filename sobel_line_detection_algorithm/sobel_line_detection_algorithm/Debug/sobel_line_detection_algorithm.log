@@ -1,0 +1,13 @@
+﻿Build started 9/28/2016 2:12:31 PM.
+     1>Project "C:\Users\Ben Loisch\Documents\Visual Studio 2013\Projects\sobel_line_detection_algorithm\sobel_line_detection_algorithm\sobel_line_detection_algorithm.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ImageBMP.cpp
+         ImageBMP.cpp
+     1>c:\users\ben loisch\documents\visual studio 2013\projects\sobel_line_detection_algorithm\sobel_line_detection_algorithm\imagebmp.cpp(106): error C2563: mismatch in formal parameter list
+     1>c:\users\ben loisch\documents\visual studio 2013\projects\sobel_line_detection_algorithm\sobel_line_detection_algorithm\imagebmp.cpp(106): error C2568: '<<' : unable to resolve function overload
+                 c:\program files (x86)\microsoft visual studio 12.0\vc\include\ostream(997): could be 'std::basic_ostream<_Elem,_Traits> &std::endl(std::basic_ostream<_Elem,_Traits> &)'
+     1>Done Building Project "C:\Users\Ben Loisch\Documents\Visual Studio 2013\Projects\sobel_line_detection_algorithm\sobel_line_detection_algorithm\sobel_line_detection_algorithm.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.63
