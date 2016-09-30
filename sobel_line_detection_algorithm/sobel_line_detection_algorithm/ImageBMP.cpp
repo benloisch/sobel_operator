@@ -95,53 +95,104 @@ void ImageBMP::createBMP(unsigned int width, unsigned int height, string fileNam
 }
 
 void ImageBMP::loadBMP(string inFileName) {
+	cout << "Loading BMP file..." << endl;
 	//open bmp and read width, height, and get RGB data
 	FILE *file;
-	if (fopen_s(&file, inFileName.append(".bmp").c_str(), "r") == 0) {
+	string openFile = inFileName;
+	if (fopen_s(&file, openFile.append(".bmp").c_str(), "r") == 0) {
 
 		//read first two characters and determine that file is in fact a bmp image
 		char first = fgetc(file);
 		char second = fgetc(file);
 		if (first != EOF && second != EOF) {
-			if ((strcmp(first, 'B') && second != 'M') || (first != 'M' && second != 'B')) {
+			if ((first != 'B' && first != 'M') || (second != 'B' && second != 'M')) {
 				cout << "Input file is not a BMP image!" << endl;
 				return;
 			}
 		}
 
+		//read up until the width and height of pixels and get those values
+		for (int i = 0; i < 16; i++)
+			fgetc(file);
+
+		//now store the next two integer values which represent the width and height of image in pixels
+		unsigned int a = (unsigned int)fgetc(file);
+		unsigned int b = (unsigned int)fgetc(file);
+		unsigned int c = (unsigned int)fgetc(file);
+		unsigned int d = (unsigned int)fgetc(file);
+
+		int n = 1;
+		if (*(char *)&n == 1) { //if computer system is little endian then extract integer this way...
+			d <<= 24;
+			c <<= 16;
+			b <<= 8;
+			this->width = a | b | c | d;
+		}
+		else { //if big endian, extract width differently
+			a <<= 24;
+			b <<= 16;
+			c <<= 8;
+			this->width = a | b | c | d;
+		}
+
+		//now store height of bmp image
+		a = (unsigned int)fgetc(file);
+		b = (unsigned int)fgetc(file);
+		c = (unsigned int)fgetc(file);
+		d = (unsigned int)fgetc(file);
+
+		n = 1;
+		if (*(char *)&n == 1) { //if computer system is little endian then extract integer this way...
+			d <<= 24;
+			c <<= 16;
+			b <<= 8;
+			this->height = a | b | c | d;
+		}
+		else { //if big endian, extract width differently
+			a <<= 24;
+			b <<= 16;
+			c <<= 8;
+			this->height = a | b | c | d;
+		}
+
+		//now copy over bmp pixel RGB values into buffer
+		this->createBMP(this->width, this->height, inFileName.append("_output")); //first allocate buffer data
+
+		//read the rest of the header file until start of RGB data
+		for (int i = 0; i < 28; i++)
+			fgetc(file);
+
+		//calculate padding needed for image so we can extract RGB properly
+		//each row must be a multiple of 4 bytes
+		int pad = 0;
+		if ((width * 3) % 4 != 0) {
+			pad = 4 - ((width * 3) % 4); //remaining bytes to be added
+		}
+
+		//read rgb data and put into buffer
+		for (int h = height - 1; h >= 0; h--) {
+			for (int w = 0; w < width; w++) {
+				unsigned char b = fgetc(file);
+				unsigned char g = fgetc(file);
+				unsigned char r = fgetc(file);
+				setPixelColor(w, h, r, g, b);
+
+				if (w == 435) {
+					int stop = 0;
+				}
+			}
+
+			//eat up padding bytes
+			for (int i = 0; i < pad; i++) {
+				fgetc(file);
+			}
+		}
+
+		int stop = 0;
 	}
 	else {
 		cout << "Could not open image file!" << endl;
 	}
-
-	int stop = 0;
-
-	/*
-	for (int i = 0; i < 54; i++)
-		fgetc(file);
-
-	while (1) {
-		cout << fgetc(file) << endl;
-	}
-	char c1 = fgetc(file);
-	char c2 = fgetc(file);
-	char c3 = fgetc(file);
-	char c4 = fgetc(file);
-
-	unsigned int ai = (int)c1;
-	unsigned int bi = (int)c2;
-	unsigned int ci = (int)c3;
-	unsigned int di = (int)c4;
-	
-	di <<= 24;
-	ci <<= 16;
-	bi <<= 8;
-
-	unsigned int size = ai | bi | ci | di;
-
-	cout << size << endl;
-	int stop = 0;
-	*/
 }
 
 void ImageBMP::saveBMP() {
@@ -153,7 +204,7 @@ void ImageBMP::saveBMP() {
 
 	//check for endianness of the computer and store 'BM' accordingly 
 	int n = 1;
-	if (*(char *)&n == 1)
+	if (*(char *)&n == 1) //if computer system is little endian
 		bfType = 'MB';
 
 	//each row must be a multiple of 4 bytes

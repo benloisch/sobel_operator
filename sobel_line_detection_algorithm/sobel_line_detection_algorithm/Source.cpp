@@ -6,7 +6,8 @@ using namespace std;
 int main() {
 
 	ImageBMP test;
-	test.loadBMP("BarycentricSubdivision3D-2-Shrank");
+	test.loadBMP("output2");
+	test.saveBMP();
 
 	system("PAUSE");
 	return 0;
