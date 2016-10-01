@@ -99,7 +99,7 @@ void ImageBMP::loadBMP(string inFileName) {
 	//open bmp and read width, height, and get RGB data
 	FILE *file;
 	string openFile = inFileName;
-	if (fopen_s(&file, openFile.append(".bmp").c_str(), "r") == 0) {
+	if (fopen_s(&file, openFile.append(".bmp").c_str(), "rb") == 0) {
 
 		//read first two characters and determine that file is in fact a bmp image
 		char first = fgetc(file);
@@ -157,7 +157,7 @@ void ImageBMP::loadBMP(string inFileName) {
 
 		//now copy over bmp pixel RGB values into buffer
 		this->createBMP(this->width, this->height, inFileName.append("_output")); //first allocate buffer data
-
+		
 		//read the rest of the header file until start of RGB data
 		for (int i = 0; i < 28; i++)
 			fgetc(file);
@@ -171,15 +171,11 @@ void ImageBMP::loadBMP(string inFileName) {
 
 		//read rgb data and put into buffer
 		for (int h = height - 1; h >= 0; h--) {
-			for (int w = 0; w < width; w++) {
+			for (unsigned int w = 0; w < width; w++) {
 				unsigned char b = fgetc(file);
 				unsigned char g = fgetc(file);
 				unsigned char r = fgetc(file);
 				setPixelColor(w, h, r, g, b);
-
-				if (w == 435) {
-					int stop = 0;
-				}
 			}
 
 			//eat up padding bytes
@@ -187,8 +183,6 @@ void ImageBMP::loadBMP(string inFileName) {
 				fgetc(file);
 			}
 		}
-
-		int stop = 0;
 	}
 	else {
 		cout << "Could not open image file!" << endl;
@@ -279,5 +273,63 @@ void ImageBMP::setInitialBMPColor(unsigned char r, unsigned char g, unsigned cha
 	for (unsigned int i = 0; i < height; i++) {
 		for (unsigned int j = 0; j < width; j++)
 			this->setPixelColor(j, i, r, g, b);
+	}
+}
+
+void ImageBMP::convertToGrayScale() {
+	for (unsigned int i = 0; i < height; i++) {
+		for (unsigned int j = 0; j < width; j++) {
+			RGB pixel = this->getPixelColor(j, i);
+			//convert to grayscale by weighing each color
+			//GIMP / Photoshop uses a method like this
+			unsigned char gray = (unsigned char)((pixel.r * 0.3) + (pixel.g * 0.59) + (pixel.b * 0.11));
+			this->setPixelColor(j, i, gray, gray, gray);
+		}
+	}
+}
+
+void ImageBMP::performSobelEdgeDetection(unsigned int brightness) {
+	//create a temporary BMP so we can operate on temp, and store values in original and save it
+	ImageBMP temp;
+	temp.createBMP(width, height, fileName);
+	for (unsigned int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < width; x++) {
+			RGB copy = this->getPixelColor(x, y);
+			temp.setPixelColor(x, y, (unsigned char)copy.r, (unsigned char)copy.g, (unsigned char)copy.b);
+		}
+	}
+
+	for (unsigned int h = 0; h < this->height; h++) {
+		for (unsigned int w = 0; w < this->width; w++) {
+			if (h == 0 || w == 0 || h == height - 1 || w == width - 1) {
+				this->setPixelColor(w, h, 0, 0, 0);
+				continue;
+			}
+
+			int pix11 = (int)temp.getPixelColor(w - 1, h - 1).r;
+			int pix12 = (int)temp.getPixelColor(w, h - 1).r;
+			int pix13 = (int)temp.getPixelColor(w + 1, h - 1).r;
+			int pix21 = (int)temp.getPixelColor(w - 1, h).r;
+			int pix22 = (int)temp.getPixelColor(w, h).r;
+			int pix23 = (int)temp.getPixelColor(w + 1, h).r;
+			int pix31 = (int)temp.getPixelColor(w - 1, h + 1).r;
+			int pix32 = (int)temp.getPixelColor(w, h + 1).r;
+			int pix33 = (int)temp.getPixelColor(w + 1, h + 1).r;
+
+			double Gx = (pix11*-1) + (pix12 * 0) + (pix13 * 1) + (pix21*-2) + (pix22 * 0) + (pix23 * 2) + (pix31*-1) + (pix32 * 0) + (pix33 * 1);
+			double Gy = (pix11*-1) + (pix12 * -2) + (pix13 * -1) + (pix21*0) + (pix22 * 0) + (pix23 * 0) + (pix31*1) + (pix32 * 2) + (pix33 * 1);
+
+			//clamp Gx and Gy
+			Gx = abs(Gx) / 4.0;
+			Gy = abs(Gy) / 4.0;
+
+			double dgradient = sqrt(Gx*Gx + Gy*Gy);
+			//increase brightness a bit and clamp to values from 0 to 255
+			dgradient *= brightness;
+			unsigned char gradient = dgradient > 255 ? 255 : (unsigned char)dgradient;
+			//gradient = gradient < 0 ? 0 : gradient;
+
+			this->setPixelColor(w, h, gradient, gradient, gradient);
+		}
 	}
 }

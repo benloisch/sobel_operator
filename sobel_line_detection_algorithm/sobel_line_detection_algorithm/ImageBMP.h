@@ -27,6 +27,8 @@ public:
 	void createBMP(unsigned int width, unsigned int height, string fileName);
 	void loadBMP(string inFileName);
 	void saveBMP();
+	void convertToGrayScale();
+	void performSobelEdgeDetection(unsigned int brightness);
 
 	inline 
 	void ImageBMP::setPixelColor(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b) {

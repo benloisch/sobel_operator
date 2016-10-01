@@ -1,2 +1,2 @@
-#TargetFrameworkVersion=v4.0:PlatformToolSet=v120:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit
-Release|Win32|C:\Github\Repository\sobel_operator\sobel_line_detection_algorithm\|
+#TargetFrameworkVersion=v4.0:PlatformToolSet=v140:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit:WindowsTargetPlatformVersion=8.1
+Release|Win32|C:\Users\Ben Loisch\Documents\GitHub\Repository\sobel_operator\sobel_line_detection_algorithm\|
